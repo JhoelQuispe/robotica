@@ -164,6 +164,7 @@ class App(object):
                 if self.estrategia == 0: #delantero
                     print 'ES DELANTERO'
                     # error = np.linalg.norm(self.variables[0][1] - ball_position[1])
+
                     
                     car_position = np.array(self.variables[0][1])
                     obj_position = np.array(self.variables[1])
@@ -172,18 +173,34 @@ class App(object):
                     print 'pre error:', error
 
                     if(error < 40): # lo toca
+                        print 'go to the goal'
                         goal_pos = np.array((600,300))
-                        RI,RD = self.move_pdi_to(goal_pos) #va al arco
+                        angle = 0
+                        RI,RD = self.move_pdi_to(goal_pos , angle) #va al arco
                     else: # si no
-                        RI,RD = self.move_pdi_to(np.array(self.variables[1])) #sigue la pelota
+                        print 'search the ball'
 
+                        # if car_position[0] > objective[0]: objective_angle = 180
+                        # else: objective_angle = 0
+
+                        angle = 0
+
+                        RI,RD = self.move_pdi_to(np.array(self.variables[1]) , angle) #sigue la pelota
 
                 else: #arquero
                     print 'ES ARQUERO'
 
-                    own = np.array((40,250))
-                    RI , RD = self.move_pdi_to(own) #va a su arco
+                    print self.variables[0][1]
 
+                    if self.variables[0][1][1] < 300:
+                        angle = 90
+                    else:
+                        angle = 270
+
+                    print angle
+
+                    own = np.array((40,250))
+                    RI , RD = self.move_pdi_to(own , angle) #va a su arco
 
                 m_right.run(RD)
                 m_left.run(RI)
@@ -211,7 +228,7 @@ class App(object):
             self.estrategia = 0 # delantero
 
     
-    def move_pdi_to(self , objective):
+    def move_pdi_to(self , objective , angle):
         objective_angle = 0
         car_angle = self.variables[0][0]
 
@@ -222,8 +239,9 @@ class App(object):
         print 'car_position', car_position
 
 
-        if car_position[0] > objective[0]: objective_angle = 180
-        else: objective_angle = 0
+
+
+
 
         error = np.linalg.norm(car_position - objective)
 
