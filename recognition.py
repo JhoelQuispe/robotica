@@ -39,13 +39,14 @@ def draw_arrow(image, p, q, color, arrow_magnitude=1, thickness=3, line_type=8, 
     cv2.line(image, p, q, color, thickness, line_type, shift)
 
 def draw_arrow_angle(image, p, angle, distance, color, arrow_magnitude=1, thickness=3, line_type=8, shift=0):
-    new_angle = angle - (angle - 90)/2
+    new_angle = angle - 45
     print "new_angle", new_angle
     print "angle", angle
-    print "cos", cos( radians(angle))
-    print "sin", sin(radians(angle))
-    new_angle = angle
-    q = (int(p[0] + cos(radians(new_angle))*distance), int(p[1] + sin(radians(new_angle))*distance))
+    print "cos", cos( radians(angle)) * distance
+    print "sin", sin(radians(angle)) * distance
+    print "p", p
+    q = (int(p[0] + cos(radians(new_angle))*distance), int(p[1] - sin(radians(new_angle))*distance))
+    print "q", q
 
     # draw arrow tail
     cv2.line(image, p, q, color, thickness, line_type, shift)
