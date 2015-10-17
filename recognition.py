@@ -5,7 +5,7 @@ import cv2
 
 import video
 
-from math import atan2, degrees  , pi
+from math import atan2, degrees, pi, cos, sin
 
 import nxt.locator
 from nxt.motor import *
@@ -39,8 +39,12 @@ def draw_arrow(image, p, q, color, arrow_magnitude=1, thickness=3, line_type=8, 
     cv2.line(image, p, q, color, thickness, line_type, shift)
 
 def draw_arrow_angle(image, p, angle, distance, color, arrow_magnitude=1, thickness=3, line_type=8, shift=0):
-    new_angle = angle % 90
-    q = (p[0] + cos(new_angle)*distance, p[1] + sen(new_angle)*distance)
+    new_angle = angle - (angle - 90)/2
+    print "new_angle", new_angle
+    print "angle", angle
+    print "cos", cos(new_angle)
+    print "sin", sin(new_angle)
+    q = (int(p[0] + cos(new_angle)*distance), int(p[1] + sin(new_angle)*distance))
 
     # draw arrow tail
     cv2.line(image, p, q, color, thickness, line_type, shift)
@@ -193,7 +197,6 @@ class App(object):
                             draw_arrow_angle(vis, center, angle, 100 , (0, 0, 255), 15)
                     except:
                         pass
-
                     if idx % 2 == 0:
                         self.aux_box = self.windows[idx]
                     else:

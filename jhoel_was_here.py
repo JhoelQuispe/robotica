@@ -181,7 +181,7 @@ class App(object):
                 else: #arquero
                     print 'ES ARQUERO'
 
-                    own = np.array((10,300))
+                    own = np.array((40,250))
                     RI , RD = self.move_pdi_to(own) #va a su arco
 
 
