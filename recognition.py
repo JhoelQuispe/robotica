@@ -5,7 +5,7 @@ import cv2
 
 import video
 
-from math import atan2, degrees, pi, cos, sin
+from math import atan2, degrees, pi, cos, sin, radians
 
 import nxt.locator
 from nxt.motor import *
@@ -42,9 +42,10 @@ def draw_arrow_angle(image, p, angle, distance, color, arrow_magnitude=1, thickn
     new_angle = angle - (angle - 90)/2
     print "new_angle", new_angle
     print "angle", angle
-    print "cos", cos(new_angle)
-    print "sin", sin(new_angle)
-    q = (int(p[0] + cos(new_angle)*distance), int(p[1] + sin(new_angle)*distance))
+    print "cos", cos( radians(angle))
+    print "sin", sin(radians(angle))
+    new_angle = angle
+    q = (int(p[0] + cos(radians(new_angle))*distance), int(p[1] + sin(radians(new_angle))*distance))
 
     # draw arrow tail
     cv2.line(image, p, q, color, thickness, line_type, shift)

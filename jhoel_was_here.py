@@ -22,7 +22,7 @@ MAX_SCA = 35
 PONDER_SCA = 1
 PONDER_SCL = 1
 MAX_WHEEL = 127
-LIMITE_ARQUERO_DELANTERO = 100
+LIMITE_ARQUERO_DELANTERO = 150
 
 def get_angle(p1, p2): 
     (dx, dy) = (p1[0]-p2[0], p2[1]-p1[1])
@@ -150,10 +150,15 @@ class App(object):
             cv2.imshow('camshift', vis)
 
             # print self.variables
+
+
             for idx, variable in enumerate(self.variables):
             	print idx, ".-", variable
 
             if self.variables[0] != None:
+
+                self.variables[0][1][1] = 480 + self.variables[0][1][1]
+                print "car_position" , self.variables[0][1]
 
                 self.definir_estrategia()
 
@@ -202,8 +207,8 @@ class App(object):
                     own = np.array((40,250))
                     RI , RD = self.move_pdi_to(own , angle) #va a su arco
 
-                m_right.run(RD)
-                m_left.run(RI)
+                # m_right.run(RD)
+                # m_left.run(RI)
 
                 time.sleep(0.08)
 
