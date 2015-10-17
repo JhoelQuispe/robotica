@@ -185,26 +185,19 @@ class App(object):
                         q = midpoint( pointa1, pointa2 )
 
                         angle = get_angle(q, p)
-                        center = set_position(midpoint(q, p)
+                        center = midpoint(q, p)
+                        center_array = set_position(center)
 
                         if idx != 0:
-                            # draw_arrow(vis, p, q, (0, 0, 255), 15)
                             draw_arrow(vis, p, q, (0, 0, 255), 15)
+                            draw_arrow_angle(vis, center, angle, 100 , (0, 0, 255), 15)
                     except:
                         pass
-
-                    # if idx % 2 == 0:
-                    #     self.aux_box = track_box
-                    # else:
-                    #     self.variables[(idx - 1)/2] = (get_angle(track_box[0], self.aux_box[0]), midpoint(track_box[0], self.aux_box[0]))
-                    #     self.aux_box = None
-                    # if idx == (NUMBER_OBJECTS -1):
-                    #     self.variables[idx/2] = track_box[0]
 
                     if idx % 2 == 0:
                         self.aux_box = self.windows[idx]
                     else:
-                        self.variables[(idx - 1)/2] = (angle, center)
+                        self.variables[(idx - 1)/2] = (angle, center_array)
                         self.aux_box = None
                     if idx == (NUMBER_OBJECTS-2):
                         self.variables[idx/2] = set_position( (x + w/2, y + h/2))
@@ -232,9 +225,7 @@ class App(object):
                 self.show_backproj = not self.show_backproj
         cv2.destroyAllWindows()
 
-    def control_pd(self ):
-        # print 'control_pd'   
-
+    def control_pd(self):
         car_angle = self.variables[0][0]
         ball_position = self.variables[1]
         car_position = self.variables[0][1]
@@ -303,9 +294,12 @@ if __name__ == '__main__':
 
     m_right = m_left = 1
 
-    rokusho = BlueSock('00:16:53:1A:EA:61').connect()
+    # rokusho = BlueSock('00:16:53:1A:EA:61').connect()
 
-    m_right = Motor(rokusho, PORT_B)
-    m_left  = Motor(rokusho, PORT_C)
+    # m_right = Motor(rokusho, PORT_B)
+    # m_left  = Motor(rokusho, PORT_C)
+
+    m_right = None
+    m_left  = None
 
     App(video_src).run(m_right , m_left)
