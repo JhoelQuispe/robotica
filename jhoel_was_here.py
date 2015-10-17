@@ -165,13 +165,24 @@ class App(object):
                     print 'ES DELANTERO'
                     # error = np.linalg.norm(self.variables[0][1] - ball_position[1])
                     
-                    error = np.linalg.norm(car_position - objective)
+                    car_position = np.array(self.variables[0][1])
+                    obj_position = np.array(self.variables[1])
 
-                    RI,RD = self.move_pdi_to(np.array(self.variables[1]))
+                    error = np.linalg.norm(car_position - obj_position)
+                    print 'pre error:', error
 
-                else:
+                    if(error < 40): # lo toca
+                        goal_pos = np.array((600,300))
+                        RI,RD = self.move_pdi_to(goal_pos) #va al arco
+                    else: # si no
+                        RI,RD = self.move_pdi_to(np.array(self.variables[1])) #sigue la pelota
+
+
+                else: #arquero
                     print 'ES ARQUERO'
 
+                    own = np.array((10,300))
+                    RI , RD = self.move_pdi_to(own) #va a su arco
 
 
                 m_right.run(RD)
