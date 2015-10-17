@@ -211,15 +211,18 @@ class App(object):
                 m_right.run(RD)
                 m_left.run(RI)
 
-                time.sleep(0.05)
+                time.sleep(0.01)
 
-                # m_left.brake()
-                # m_right.brake()
 
     
             ch = 0xFF & cv2.waitKey(5)
             if ch == 27:
+
+                m_left.brake()
+                m_right.brake()
+
                 break
+                
             if ch == ord('b'):
                 self.show_backproj = not self.show_backproj
         cv2.destroyAllWindows()
@@ -303,6 +306,7 @@ if __name__ == '__main__':
 
     m_right = Motor(rokusho, PORT_B)
     m_left  = Motor(rokusho, PORT_C)
+
 
     App(video_src).run(m_right , m_left)
 
