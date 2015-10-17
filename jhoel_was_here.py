@@ -22,7 +22,8 @@ MAX_SCA = 35
 PONDER_SCA = 1
 PONDER_SCL = 1
 MAX_WHEEL = 127
-LIMITE_ARQUERO_DELANTERO = 150
+LIMITE_ARQUERO_DELANTERO = 180
+RADIO_BALL = 40
 
 def get_angle(p1, p2): 
     (dx, dy) = (p1[0]-p2[0], p2[1]-p1[1])
@@ -177,7 +178,7 @@ class App(object):
                     error = np.linalg.norm(car_position - obj_position)
                     print 'pre error:', error
 
-                    if(error < 40): # lo toca
+                    if(error < RADIO_BALL): # lo toca
                         print 'go to the goal'
                         goal_pos = np.array((600,300))
                         angle = 0
@@ -207,13 +208,13 @@ class App(object):
                     own = np.array((40,250))
                     RI , RD = self.move_pdi_to(own , angle) #va a su arco
 
-                # m_right.run(RD)
-                # m_left.run(RI)
+                m_right.run(RD)
+                m_left.run(RI)
 
-                time.sleep(0.08)
+                time.sleep(0.05)
 
-                m_left.brake()
-                m_right.brake()
+                # m_left.brake()
+                # m_right.brake()
 
     
             ch = 0xFF & cv2.waitKey(5)
