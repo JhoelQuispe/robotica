@@ -36,7 +36,7 @@ def midpoint(p1, p2):
 
 def set_position(p1):
     print p1[0]
-    return np.array([p1[0]-7 , -p1[1]])
+    return np.array([p1[0]-7 , 640-p1[1]])
 
 class App(object):
     def __init__(self, video_src):
@@ -229,19 +229,13 @@ class App(object):
 
     
     def move_pdi_to(self , objective , angle):
-        objective_angle = 0
-        car_angle = self.variables[0][0]
 
+        car_angle = self.variables[0][0]
 
         # ball_position = self.variables[1]
         car_position = self.variables[0][1]
 
         print 'car_position', car_position
-
-
-
-
-
 
         error = np.linalg.norm(car_position - objective)
 
@@ -257,7 +251,8 @@ class App(object):
 
         if(scl > MAX_SCL): scl = MAX_SCL
 
-        sub_error = objective_angle - car_angle
+        ## 
+        sub_error = angle - car_angle
         if sub_error < -180:
             sub_error = 360 + sub_error
 
