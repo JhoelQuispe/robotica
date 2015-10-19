@@ -16,13 +16,13 @@ NUMBER_OBJECTS = 3
 
 kp = 0.3
 kd = 0.4
-MIN_FRZ = 50
+MIN_FRZ = 55
 MAX_SCL = 35
 MAX_SCA = 35
 PONDER_SCA = 1
 PONDER_SCL = 1
 MAX_WHEEL = 127
-LIMITE_ARQUERO_DELANTERO = 180
+LIMITE_ARQUERO_DELANTERO = 140
 RADIO_BALL = 40
 
 def get_angle(p1, p2): 
@@ -37,7 +37,7 @@ def midpoint(p1, p2):
 
 def set_position(p1):
     print p1[0]
-    return np.array([p1[0]-7 , 640-p1[1]])
+    return np.array([p1[0]-7 , 480-p1[1]])
 
 class App(object):
     def __init__(self, video_src):

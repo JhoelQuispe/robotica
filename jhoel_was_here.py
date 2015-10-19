@@ -5,18 +5,23 @@ import cv2
 
 import video
 
-from math import atan2, degrees  , pi
+from math import atan2, degrees, pi, cos, sin, radians
 
 import nxt.locator
 from nxt.motor import *
 from nxt.bluesock import *
 import time
 
-NUMBER_OBJECTS = 3
 
-kp = 0.3
-kd = 0.4
-MIN_FRZ = 50
+#USER INPUTS
+NUMBER_PLAYERS = 2
+
+#SYSTEM VARS
+NUMBER_OBJECTS =  NUMBER_PLAYERS*2 + 1
+
+kp = 0.7
+kd = 0.7
+MIN_FRZ = 55
 MAX_SCL = 35
 MAX_SCA = 35
 PONDER_SCA = 1
@@ -33,11 +38,55 @@ def get_angle(p1, p2):
     return angle
 
 def midpoint(p1, p2):
-    return np.array([(p1[0]+p2[0])/2, -(p1[1]+p2[1])/2])
+    return ((p1[0]+p2[0])/2, (p1[1]+p2[1])/2)
 
 def set_position(p1):
     print p1[0]
-    return np.array([p1[0]-7 , 640-p1[1]])
+    return np.array([p1[0]-7 , 480+p1[1]])
+
+def set_position_jean(p1):
+    return np.array([p1[0] , 480-p1[1]])
+
+def draw_arrow(image, p, q, color, arrow_magnitude=1, thickness=3, line_type=8, shift=0):
+    # draw arrow tail
+    cv2.line(image, p, q, color, thickness, line_type, shift)
+    # calc angle of the arrow 
+    angle = np.arctan2(p[1]-q[1], p[0]-q[0])
+    # starting point of first line of arrow head 
+    p = (int(q[0] + arrow_magnitude * np.cos(angle + np.pi/4)),
+    int(q[1] + arrow_magnitude * np.sin(angle + np.pi/4)))
+    # draw first half of arrow head
+    cv2.line(image, p, q, color, thickness, line_type, shift)
+    # starting point of second line of arrow head 
+    p = (int(q[0] + arrow_magnitude * np.cos(angle - np.pi/4)),
+    int(q[1] + arrow_magnitude * np.sin(angle - np.pi/4)))
+    # draw second half of arrow head
+    cv2.line(image, p, q, color, thickness, line_type, shift)
+
+def draw_arrow_angle(image, p, angle, distance, color, arrow_magnitude=1, thickness=3, line_type=8, shift=0):
+    new_angle = angle - 45
+    print "new_angle", new_angle
+    print "angle", angle
+    print "cos", cos( radians(angle)) * distance
+    print "sin", sin(radians(angle)) * distance
+    print "p", p
+    q = (int(p[0] + cos(radians(new_angle))*distance), int(p[1] - sin(radians(new_angle))*distance))
+    print "q", q
+
+    # draw arrow tail
+    cv2.line(image, p, q, color, thickness, line_type, shift)
+    # calc angle of the arrow 
+    angle = np.arctan2(p[1]-q[1], p[0]-q[0])
+    # starting point of first line of arrow head 
+    p = (int(q[0] + arrow_magnitude * np.cos(angle + np.pi/4)),
+    int(q[1] + arrow_magnitude * np.sin(angle + np.pi/4)))
+    # draw first half of arrow head
+    cv2.line(image, p, q, color, thickness, line_type, shift)
+    # starting point of second line of arrow head 
+    p = (int(q[0] + arrow_magnitude * np.cos(angle - np.pi/4)),
+    int(q[1] + arrow_magnitude * np.sin(angle - np.pi/4)))
+    # draw second half of arrow head
+    cv2.line(image, p, q, color, thickness, line_type, shift)
 
 class App(object):
     def __init__(self, video_src):
@@ -50,14 +99,15 @@ class App(object):
         self.tracking_state = 0
         self.show_backproj = False
 
-        self.objects = [None] * NUMBER_OBJECTS
+        self.objects = [None] * (NUMBER_OBJECTS + 1)
+        self.objects[NUMBER_OBJECTS] = 1
         self.windows = []
         self.histograms = []
         self.actual_object = 0
         self.actual_window = 0
         self.actual_histogram = 0
 
-        self.variables = [None] * (NUMBER_OBJECTS - 1)
+        self.variables = [None] * (NUMBER_OBJECTS)
         self.last_el = self.last_ea = 0
 
 
@@ -111,7 +161,7 @@ class App(object):
 
 
             if self.is_complete():
-                for each in self.objects:
+                for each in self.objects[:-1]:
                     if each:
                         x0, y0, x1, y1 = each
                         self.windows.append((x0, y0, x1-x0, y1-y0))
@@ -127,26 +177,49 @@ class App(object):
                 self.objects = [None] * NUMBER_OBJECTS
 
             if self.tracking_state == 1:
-                for idx, each in enumerate(self.histograms):
+                for idx, each in enumerate(self.histograms[:-1]):
                     prob = cv2.calcBackProject([hsv], [0], each, [0, 180], 1)
                     prob &= mask
                     term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
-                    track_box, self.windows[idx] = cv2.CamShift(prob, self.windows[idx], term_crit)
+                    track_box, self.windows[idx] = cv2.meanShift(prob, self.windows[idx], term_crit)
 
                     if self.show_backproj:
                         vis[:] = prob[...,np.newaxis]
                     try:
-                        cv2.ellipse(vis, track_box, (0, 0, 255), 2)
-                    except:
-                        pass
+                        x,y,w,h = self.windows[idx]
+                        x2,y2,w2,h2 = self.aux_box
+                        pointa1 = (x,y+h)
+                        pointa2 = (x+w,y)
+                        pointb1 = (x2,y2+h2)
+                        pointb2 = (x2+w2,y2)
+                        cv2.rectangle(vis, (x,y), (x+w,y+h), 255,2)
+                        cv2.rectangle(vis, (x2,y2), (x2+w2,y2+h2), 255,2)
+                        # cv2.ellipse(vis, self.windows[idx], (0, 0, 255), 2)
+                        # q = (int(track_box[0][0]) , int(track_box[0][1]))
+                        # p = (int(self.aux_box[0][0]) , int(self.aux_box[0][1]))
+                        p = midpoint( pointb1, pointb2 )
+                        q = midpoint( pointa1, pointa2 )
 
-                    if idx == 0:
-                        self.aux_box = track_box
-                    if idx == 1:
-                        self.variables[idx - 1] = (get_angle(track_box[0], self.aux_box[0]), midpoint(track_box[0], self.aux_box[0]))
-                    if idx >= 2:
-                        self.variables[idx - 1] = set_position(track_box[0])
+                        angle = get_angle(q, p)
+                        center = midpoint(q, p)
+                        center_array = set_position_jean(center)
+                        print p , q, center, angle
+                        if idx != 0:
+                            if idx < len(self.histograms):
+                                draw_arrow_angle(vis, center, angle, 30 , (0, 255, 0), 15)
+                            else:
+                                draw_arrow_angle(vis, center, angle, 30 , (0, 0, 255), 15)
 
+                    except Exception as e:
+                        print e
+
+                    if idx % 2 == 0:
+                        self.aux_box = self.windows[idx]
+                    else:
+                        self.variables[(idx - 1)/2] = (angle-45, center_array)
+                        self.aux_box = None
+                    if idx == (NUMBER_OBJECTS-2):
+                        self.variables[idx/2] = set_position_jean( (x + w/2, y + h/2))
 
             cv2.imshow('camshift', vis)
 
@@ -157,8 +230,7 @@ class App(object):
             	print idx, ".-", variable
 
             if self.variables[0] != None:
-
-                self.variables[0][1][1] = 480 + self.variables[0][1][1]
+                self.variables[0][1][1] = self.variables[0][1][1]
                 print "car_position" , self.variables[0][1]
 
                 self.definir_estrategia()
@@ -211,7 +283,10 @@ class App(object):
                 m_right.run(RD)
                 m_left.run(RI)
 
-                time.sleep(0.01)
+                time.sleep(0.02)
+
+                # m_left.brake()
+                # m_right.brake()
 
 
     
@@ -245,6 +320,8 @@ class App(object):
         car_position = self.variables[0][1]
 
         print 'car_position', car_position
+        print 'car angle: ', car_angle
+        print 'objective angle:', angle
 
         error = np.linalg.norm(car_position - objective)
 
