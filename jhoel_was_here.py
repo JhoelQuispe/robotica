@@ -14,18 +14,18 @@ import time
 
 
 #USER INPUTS
-NUMBER_PLAYERS = 2
+NUMBER_PLAYERS = 3
 
 #SYSTEM VARS
-NUMBER_OBJECTS =  NUMBER_PLAYERS*2 + 1
+NUMBER_OBJECTS =  NUMBER_PLAYERS*2 + 2
 
 kp = 0.7
 kd = 0.7
 MIN_FRZ = 55
 MAX_SCL = 35
 MAX_SCA = 35
-PONDER_SCA = 1
-PONDER_SCL = 1
+PONDER_SCA = 1.3
+PONDER_SCL = 1.3
 MAX_WHEEL = 127
 LIMITE_ARQUERO_DELANTERO = 180
 RADIO_BALL = 40
@@ -109,6 +109,9 @@ class App(object):
 
         self.variables = [None] * (NUMBER_OBJECTS)
         self.last_el = self.last_ea = 0
+
+        self.gogo = False
+        self.reset = False
 
 
     def onmouse(self, event, x, y, flags, param):
@@ -205,9 +208,11 @@ class App(object):
                         center_array = set_position_jean(center)
                         print p , q, center, angle
                         if idx != 0:
-                            if idx < len(self.histograms):
+                            if idx < len(self.histograms)/2:
+                                print "menor"
                                 draw_arrow_angle(vis, center, angle, 30 , (0, 255, 0), 15)
                             else:
+                                print "mayor"
                                 draw_arrow_angle(vis, center, angle, 30 , (0, 0, 255), 15)
 
                     except Exception as e:
@@ -245,7 +250,7 @@ class App(object):
 
                     
                     car_position = np.array(self.variables[0][1])
-                    obj_position = np.array(self.variables[1])
+                    obj_position = np.array(self.variables[NUMBER_PLAYERS])
 
                     error = np.linalg.norm(car_position - obj_position)
                     print 'pre error:', error
@@ -263,7 +268,7 @@ class App(object):
 
                         angle = 0
 
-                        RI,RD = self.move_pdi_to(np.array(self.variables[1]) , angle) #sigue la pelota
+                        RI,RD = self.move_pdi_to(np.array(self.variables[NUMBER_PLAYERS]) , angle) #sigue la pelota
 
                 else: #arquero
                     print 'ES ARQUERO'
@@ -280,8 +285,19 @@ class App(object):
                     own = np.array((40,250))
                     RI , RD = self.move_pdi_to(own , angle) #va a su arco
 
-                m_right.run(RD)
-                m_left.run(RI)
+                print self.gogo
+                if self.gogo:
+                    m_right.run(RD)
+                    m_left.run(RI)
+
+                if not self.gogo:
+                    m_left.brake()
+                    m_right.brake()
+
+                if self.reset:
+                    RI , RD = self.move_pdi_to(np.array((320,240)) , 180) #va a su arco
+                    m_right.run(RD)
+                    m_left.run(RI)
 
                 time.sleep(0.02)
 
@@ -292,7 +308,6 @@ class App(object):
     
             ch = 0xFF & cv2.waitKey(5)
             if ch == 27:
-
                 m_left.brake()
                 m_right.brake()
 
@@ -300,9 +315,18 @@ class App(object):
                 
             if ch == ord('b'):
                 self.show_backproj = not self.show_backproj
+
+            if ch == ord('g'):
+                self.gogo = not self.gogo
+
+            if ch == ord('r'):
+                self.reset = not self.reset
+
+
         cv2.destroyAllWindows()
 
-
+    def go_center(self):
+        self.move_pdi_to(320,240)
 
     def definir_estrategia(self):
 
